@@ -8,7 +8,7 @@ const setupBotInit = async (client) => {
 
     setIfNotExists('prefix', defaultPrefix);
     dbSetup();
-    // scheduleSupportEndMessage(client);
+    scheduleSupportEndMessage(client);
 
 };
 

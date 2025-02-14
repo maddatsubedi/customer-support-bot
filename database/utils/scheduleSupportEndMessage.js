@@ -1,21 +1,20 @@
 const { simpleEmbed } = require('../../embeds/generalEmbeds');
-const { getGuildConfig } = require('../models/guildConfig');
+const { getGuildConfig, setGuildConfig } = require('../models/guildConfig');
 const { getWorkingHours } = require('../models/workingHours');
 
-const SCHEDULE_INTERVAL = 60000; // 1 minute
+const SCHEDULE_INTERVAL = 60000; // Check every 1 minute
 
 const scheduleSupportEndMessage = (client) => {
-    // Track which guilds have already received the end message today.
-    const sentSupportEndMessage = {};
-
     const checkAndSend = async () => {
         const now = new Date();
-        const currentDate = now.toLocaleDateString();
+        const currentDate = now.toLocaleDateString(); // e.g., "2/13/2025"
         const currentDay = now.toLocaleString('en-US', { weekday: 'long' });
         const currentHour = now.getHours();
 
+        // Loop through each guild the client is in.
         for (const [guildId, guild] of client.guilds.cache) {
-            if (sentSupportEndMessage[guildId] === currentDate) continue;
+            const lastSentRecord = getGuildConfig(guildId, 'lastSupportEndMessageDate');
+            if (lastSentRecord && lastSentRecord === currentDate) continue; // Already sent today
 
             const workingHours = getWorkingHours(guildId);
             const todayHours = workingHours.find(hours => hours.day === currentDay);
@@ -26,27 +25,26 @@ const scheduleSupportEndMessage = (client) => {
                 const supportEndMessage = getGuildConfig(guildId, 'supportEndMessage');
                 if (!supportEndMessage) continue;
 
+                // Retrieve the agent role.
                 const agentRoleRecord = getGuildConfig(guildId, 'agentRoleID');
                 if (!agentRoleRecord) continue;
                 const agentRole = guild.roles.cache.get(agentRoleRecord);
                 if (!agentRole) continue;
 
+                // Send the support end message to every member with the agent role.
                 for (const member of agentRole.members.values()) {
                     try {
                         const agentEmbed = simpleEmbed({
                             title: 'Support Hours Ended',
                             description: `>>> **${supportEndMessage}**`,
                             color: 'Random',
-                        }).setFooter(
-                            { text: `${guild.name} | Support`, iconURL: guild.iconURL() }
-                        );
+                        }).setFooter({ text: `${guild.name} | Support`, iconURL: guild.iconURL() });
                         await member.send({ embeds: [agentEmbed] });
                     } catch (error) {
                         console.error(`Failed to send support end message to ${member.user.tag} in ${guild.name}: ${error.message}`);
                     }
                 }
-
-                sentSupportEndMessage[guildId] = currentDate;
+                setGuildConfig(guildId, 'lastSupportEndMessageDate', currentDate);
             }
         }
 
