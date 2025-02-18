@@ -10,8 +10,7 @@ module.exports = {
             option.setName('message')
                 .setDescription('Support message for agents')
                 .setRequired(true)
-        )
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+        ),
         isAdmin: true,
 
     async execute(interaction) {

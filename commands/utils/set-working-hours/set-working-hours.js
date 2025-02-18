@@ -28,8 +28,8 @@ module.exports = {
             option.setName('end')
                 .setDescription('End time (24-hour format, e.g., 20 for 20:00)')
                 .setRequired(true)),
-        isAdmin: true,
-        
+    isAdmin: true,
+
     async execute(interaction) {
         const guildId = interaction.guild.id;
         const day = interaction.options.getString('day');

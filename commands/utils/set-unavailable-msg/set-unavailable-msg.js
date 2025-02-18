@@ -4,28 +4,27 @@ const { simpleEmbed } = require('../../../embeds/generalEmbeds');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('set-support-end-message')
-        .setDescription('Set a custom message to notify agents when working hours end')
+        .setName('set-unavailable-msg')
+        .setDescription('Set a custom message to notify users on unavailable hours')
         .addStringOption(option =>
             option.setName('message')
-                .setDescription('Support end message for agents')
+                .setDescription('Unavailable message for users')
                 .setRequired(true)
         ),
-        isAdmin: true,
+    isAdmin: true,
 
     async execute(interaction) {
         const guildId = interaction.guild.id;
         const message = interaction.options.getString('message');
 
-        // Save the support end message in the database
-        setGuildConfig(guildId, 'supportEndMessage', message);
+        setGuildConfig(guildId, 'unavailableMessage', message);
 
         const embed = simpleEmbed({
             footer: `${interaction.guild.name} | Config`,
-            title: 'Support End Message Set',
-            color: 'Red',
+            title: 'Unavailable Message Set',
+            color: 'Random',
         }).addFields(
-            { name: 'Support End Message', value: `> ${message}` }
+            { name: 'Unavailable Message', value: `> ${message}` }
         );
 
         await interaction.reply({ embeds: [embed] });
